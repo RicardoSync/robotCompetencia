@@ -1,70 +1,35 @@
-#include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
+#include "Wire.h"
+#include "Adafruit_PWMServoDriver.h"
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 
-// called this way, it uses the default address 0x40
-Adafruit_PWMServoDriver board1 = Adafruit_PWMServoDriver(0x40);
-Adafruit_PWMServoDriver board2 = Adafruit_PWMServoDriver(0x41);
-
-#define SERVOMIN  125 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  575 // this is the 'maximum' pulse length count (out of 4096)
-
-// Define the number of servos and their positions
-struct ServoPosition {
-  int servoNumber;
-  int angle;
-};
-
-ServoPosition servoRoutine[] = {
-  {0, 90}, // Servo 0 to 90 degrees
-  {1, 45}, // Servo 1 to 45 degrees
-  {2, 135}, // Servo 2 to 135 degrees
-  {3, 180}, // Servo 3 to 180 degrees
-  {4, 0}, // Servo 4 to 0 degrees
-  // Add more servos and positions as needed
-};
-
-const int numServos = sizeof(servoRoutine) / sizeof(servoRoutine[0]);
+#define MIN_PULSE_WIDTH 600
+#define MAX_PULSE_WIDTH 2600
+#define FREQUENCY 50
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("32 channel Servo test!");
+  pwm.begin();
+  pwm.setPWMFreq(FREQUENCY);
+}
 
-  board1.begin();
-  board2.begin();  
-  board1.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
-  board2.setPWMFreq(60);
-
-  // Move each servo to the desired position
-  for (int i = 0; i < numServos; i++) {
-    moveServo(servoRoutine[i].servoNumber, servoRoutine[i].angle);
-  }
+int pulseWidth(int angle) {
+  int pulse_wide, analog_value;
+  pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
+  return analog_value;
 }
 
 void loop() {
-  // Nothing to do here
-}
-
-void moveServo(int servoNumber, int angle) {
-  if (servoNumber >= 0 && servoNumber < 32 && angle >= 0 && angle <= 180) {
-    if (servoNumber < 16) {
-      board1.setPWM(servoNumber, 0, angleToPulse(angle));
-    } else {
-      board2.setPWM(servoNumber - 16, 0, angleToPulse(angle));
-    }
-    Serial.print("Servo: ");
-    Serial.print(servoNumber);
-    Serial.print(" Angle: ");
-    Serial.println(angle);
-  } else {
-    Serial.println("Invalid servo number or angle");
-  }
-}
-
-int angleToPulse(int ang) {
-  int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX); // map angle of 0 to 180 to Servo min and Servo max 
-  Serial.print("Angle: ");
-  Serial.print(ang);
-  Serial.print(" pulse: ");
-  Serial.println(pulse);
-  return pulse;
+  pwm.setPWM(0, 0, pulseWidth(0));
+  pwm.setPWM(1, 0, pulseWidth(180));
+  delay(1000);
+  pwm.setPWM(4, 0, pulseWidth(0));
+  delay(1000);
+  pwm.setPWM(0, 0, pulseWidth(180));
+  pwm.setPWM(1, 0, pulseWidth(90));
+  delay(500);
+  pwm.setPWM(4, 0, pulseWidth(180));
+  delay(1000);
+  pwm.setPWM(0, 0, pulseWidth(90));
+  pwm.setPWM(1, 0, pulseWidth(0));
+  delay(1000);
 }

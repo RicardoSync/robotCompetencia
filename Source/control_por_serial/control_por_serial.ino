@@ -5,7 +5,6 @@
 Adafruit_PWMServoDriver board1 = Adafruit_PWMServoDriver(0x40);
 Adafruit_PWMServoDriver board2 = Adafruit_PWMServoDriver(0x41);
 
-
 #define SERVOMIN  125 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  575 // this is the 'maximum' pulse length count (out of 4096)
 
@@ -32,9 +31,7 @@ void loop() {
       // Determine which board to use
       if (servoNumber < 16) {
         board1.setPWM(servoNumber, 0, angleToPulse(angle));
-      } else {
-        board2.setPWM(servoNumber - 16, 0, angleToPulse(angle));
-      }
+      } 
       // Print the servo number and angle for debugging
       Serial.print("Servo: ");
       Serial.print(servoNumber);
@@ -46,12 +43,11 @@ void loop() {
   }
 }
 
-
-int angleToPulse(int ang){
-   int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX); // map angle of 0 to 180 to Servo min and Servo max 
-   Serial.print("Angle: ");
-   Serial.print(ang);
-   Serial.print(" pulse: ");
-   Serial.println(pulse);
-   return pulse;
+int angleToPulse(int ang) {
+  int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX); // map angle of 0 to 180 to Servo min and Servo max 
+  Serial.print("Angle: ");
+  Serial.print(ang);
+  Serial.print(" pulse: ");
+  Serial.println(pulse);
+  return pulse;
 }
